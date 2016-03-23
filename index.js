@@ -8,6 +8,7 @@ var URL = require("sdk/url");
 var { Hotkey } = require("sdk/hotkeys");
 const clipboard = require("sdk/clipboard");
 const tabs = require('sdk/tabs');
+var pageMod = require("sdk/page-mod");
 
 if (!ss.storage.bookmarks) {
   ss.storage.bookmarks  = [];
@@ -22,17 +23,25 @@ var bookmarksMenu = cm.Menu({
   '});',
 });
 
-for (var i=0; i < ss.storage.bookmarks.length; i++) {
+function addBookmarksMenuItem(text, url) {
   bookmarksMenu.addItem(cm.Item({
-    label: ss.storage.bookmarks[i].text,
-    data: ss.storage.bookmarks[i].link
+    label: text,
+    data: JSON.stringify({text: text, link: url})
   }));
+  pageMod.PageMod({
+    include: url,
+    contentScriptFile: self.data.url("select_script.js"),
+    contentScriptOptions: {text: text}
+  });
+}
+
+for (var i=0; i < ss.storage.bookmarks.length; i++) {
+  addBookmarksMenuItem(ss.storage.bookmarks[i].text, ss.storage.bookmarks[i].link);
 }
 
 var addBookmarkItem = cm.Item({
   label: "txt2link",
   context: cm.SelectionContext(),
-  //contentScriptFile: data.url('addBookmark_script.js'),
   contentScript:  'self.on("context", function () { '+
   'if(window.getSelection().toString()) {'+
     'return "Bookmark "+ window.getSelection().toString();'+
@@ -40,7 +49,6 @@ var addBookmarkItem = cm.Item({
   'return false;'+
 '});'+
 'self.on("click", function (node, data) {'+
-  'console.log("Entering click event");'+
   'if(data != "addBookmarkItem") {'+
     'return;'+
   '}'+
@@ -49,35 +57,32 @@ var addBookmarkItem = cm.Item({
 '});',
   data: "addBookmarkItem",
   onMessage: function (data) {
-    console.log(data);
     do_addBookmark(data.text, data.url);
   }
 });
 
 function do_addBookmark(text, url) {
   if(!text) {
-    console.log("do_addBookmark: Text is empty!");
     return;
   }
-  if(!url) { // || !URL.isValidURI(url)) {
-    console.log("do_addBookmark: URL is empty!");
+  if(!url || !URL.isValidURI(url)) {
     return;
   }
 
   if(ss.quotaUsage < 1) {
     ss.storage.bookmarks.push({text: text, link: url});
   } else {
-    alert('Your storage quota is exceeded. You should delete some Text Bookmarks before been able to store more.');
+    notifications.notify({
+      title: "Your storage quota is exceeded.",
+      "text": "You should delete some Text Bookmarks before been able to store more."
+    });
     return;
   }
+  addBookmarksMenuItem(text, url);
   notifications.notify({
     title: "Added to bookmarks:",
     "text": text
   });
-  bookmarksMenu.addItem(cm.Item({
-    label: text,
-    data: JSON.stringify({text: text, link: url})
-  }));
 }
 
 var addBookmarkHotKey = Hotkey({
