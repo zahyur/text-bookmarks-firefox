@@ -9,13 +9,14 @@ var { Hotkey } = require("sdk/hotkeys");
 const clipboard = require("sdk/clipboard");
 const tabs = require('sdk/tabs');
 var pageMod = require("sdk/page-mod");
+var _ = require("sdk/l10n").get;
 
 if (!ss.storage.bookmarks) {
   ss.storage.bookmarks  = [];
 }
 
 var bookmarksMenu = cm.Menu({
-  label: "Text Bookmarks",
+  label: _("bookmarks_submenu"),
   context: cm.PageContext(),
   contentScript: 'self.on("click", function (node, data) {' +
       'd = JSON.parse(data);'+
@@ -40,11 +41,11 @@ for (var i=0; i < ss.storage.bookmarks.length; i++) {
 }
 
 var addBookmarkItem = cm.Item({
-  label: "txt2link",
+  label: _("addon_name_short"),
   context: cm.SelectionContext(),
   contentScript:  'self.on("context", function () { '+
   'if(window.getSelection().toString()) {'+
-    'return "Bookmark "+ window.getSelection().toString();'+
+    'return "'+ _("add_bookmark_context") +' "+ window.getSelection().toString();'+
   '}'+
   'return false;'+
 '});'+
@@ -73,20 +74,20 @@ function do_addBookmark(text, url) {
     ss.storage.bookmarks.push({text: text, link: url});
   } else {
     notifications.notify({
-      title: "Your storage quota is exceeded.",
-      "text": "You should delete some Text Bookmarks before been able to store more."
+      title: _("quota_exceeded_notification_title"),
+      "text": _("quota_exceeded_notification_text")
     });
     return;
   }
   addBookmarksMenuItem(text, url);
   notifications.notify({
-    title: "Added to bookmarks:",
+    title: _("added_bookmark_notification_title"),
     "text": text
   });
 }
 
 var addBookmarkHotKey = Hotkey({
-  combo: "accel-shift-d",
+  combo: _("add_bookmark_hotkey"),
   onPress: function() {
   do_addBookmark(selection.text, tabs.activeTab.url);
   }
