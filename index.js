@@ -32,6 +32,7 @@ function addBookmarksMenuItem(text, url) {
   pageMod.PageMod({
     include: url,
     contentScriptFile: self.data.url("select_script.js"),
+    contentScriptWhen: 'ready',
     contentScriptOptions: {text: text}
   });
 }
@@ -85,6 +86,12 @@ function do_addBookmark(text, url) {
     "text": text
   });
 }
+
+pageMod.PageMod({
+  include: /.*txt2link=.*/,
+  contentScriptFile: self.data.url("select_script.js"),
+  contentScriptWhen: 'ready',
+});
 
 var addBookmarkHotKey = Hotkey({
   combo: _("add_bookmark_hotkey"),
