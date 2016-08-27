@@ -11,6 +11,8 @@ var { setTimeout, clearTimeout } = require("sdk/timers");
 var URL = require("sdk/url");
 var _ = require("sdk/l10n").get;
 
+//add the equals sign here, so i don't have to type it everywhere
+const QSTRING_NAME = 'txt2link=';
 const MAX_QUERY_STRING_VALUE = 30;
 const SEPARATOR = ">>>>>>>";
 
@@ -89,6 +91,8 @@ function do_addBookmark(text, url) {
 	if(!url || !URL.isValidURI(url)) {
 		return;
 	}
+	//strip our qstring, if present
+	url = url.replace(RegExp(QSTRING_NAME + '.*?[^&|^#]*', 'g'), '');
 
 	if(ss.quotaUsage < 1) {
 		ss.storage.bookmarks.push({text: text, link: url});
@@ -107,7 +111,7 @@ function do_addBookmark(text, url) {
 }
 
 pageMod.PageMod({
-	include: /.*txt2link=.*/,
+	include: RegExp('.*'+ QSTRING_NAME +'.*'),
 	contentScriptFile: self.data.url("select_script.js"),
 	contentScriptWhen: 'ready',
 });
@@ -160,10 +164,10 @@ function prepairBookmarkLink(text, url) {
 		var secondHalfLength = tl- firstHalfLength;
 		text = text.substring(0,firstHalfLength).concat(SEPARATOR, text.substring(secondHalfLength-1));
 	}
-	qstring = 'txt2link='+ encodeURIComponent(text);
+	qstring = QSTRING_NAME + encodeURIComponent(text);
 
-	if(url.indexOf('txt2link=') >= 0) {
-	url = url.replace(/txt2link=.*?[^&|^#]*/g, qstring);
+	if(url.indexOf(QSTRING_NAME) >= 0) {
+	url = url.replace(RegExp(QSTRING_NAME + '.*?[^&|^#]*', 'g'), qstring);
 	} else {
 	var searchIndex = url.indexOf('?');
 	var hashIndex = url.indexOf('#');

@@ -1,11 +1,12 @@
+const QSTRING_NAME = 'txt2link=';
 var qstring = decodeURIComponent(document.location.search);
 var text = "";
 var endText = "";
 var separator = ">>>>>>>";
 if(self.options && self.options.text) {
 	text = self.options.text;
-} else if (qstring.indexOf("txt2link=") >= 0){
-	text = qstring.match(/txt2link=.*?[^&|^#]*/g).pop().split('=').pop();
+} else if (qstring.indexOf(QSTRING_NAME) >= 0){
+	text = qstring.match(RegExp(QSTRING_NAME + '.*?[^&|^#]*', 'g')).pop().split('=').pop();
 }
 if(text) {
 	if(text.indexOf(separator)) {
