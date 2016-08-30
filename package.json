@@ -1,7 +1,7 @@
 {
   "title": "Text to Link",
   "name": "txt2link",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Makes a link to a selected text on any page.",
   "main": "index.js",
   "author": "Zahari Yurukov <zahari.yurukov@gmail.com>",
@@ -14,5 +14,5 @@
     "link",
     "text",
     "share"
-  ]
+  ],
 }
