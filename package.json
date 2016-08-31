@@ -6,7 +6,7 @@
   "main": "index.js",
   "author": "Zahari Yurukov <zahari.yurukov@gmail.com>",
   "engines": {
-    "firefox": "38.0 - 100.0"
+    "firefox": "39.0 - *"
   },
   "license": "GPL v2",
   "keywords": [
@@ -14,5 +14,5 @@
     "link",
     "text",
     "share"
-  ],
+  ]
 }

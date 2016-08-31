@@ -14,10 +14,10 @@ var _ = require("sdk/l10n").get;
 var { Cc, Ci, Cu} = require('chrome');
 var nsIFilePicker = Ci.nsIFilePicker;
 var filePicker = Cc["@mozilla.org/filepicker;1"]
-                 .createInstance(Ci.nsIFilePicker);
-	filePicker.appendFilter("Text Bookmarks (*.text-bookmarks)", "*.text-bookmarks");
-	filePicker.defaultExtension = "text-bookmarks";
-	filePicker.defaultString = "myTextBookmarks.text-bookmarks";
+	.createInstance(Ci.nsIFilePicker);
+filePicker.appendFilter("Text Bookmarks (*.text-bookmarks)", "*.text-bookmarks");
+filePicker.defaultExtension = "text-bookmarks";
+filePicker.defaultString = "myTextBookmarks.text-bookmarks";
 
 //add the equals sign here, so i don't have to type it everywhere
 const QSTRING_NAME = 'txt2link=';
@@ -35,8 +35,14 @@ var bookmarksMenu = cm.Menu({
 });
 
 function addBookmarksMenuItem(text, url) {
-bookmarksMenu.addItem(cm.Item({
-		label: text,
+	var label = '';
+	if(text.length > 30) {
+label = text.slice(0,30) + '...';
+	} else {
+	label = text;
+	}
+	bookmarksMenu.addItem(cm.Item({
+		label: label,
 		data: JSON.stringify({text: text, link: url})
 	}));
 
@@ -49,14 +55,16 @@ bookmarksMenu.addItem(cm.Item({
 }
 
 for (var i=0; i < ss.storage.bookmarks.length; i++) {
+	if(ss.storage.bookmarks[i] && (typeof ss.storage.bookmarks[i] == "object") && ss.storage.bookmarks[i].hasOwnProperty('text') && ss.storage.bookmarks[i].hasOwnProperty('link')) {
 	addBookmarksMenuItem(ss.storage.bookmarks[i].text, ss.storage.bookmarks[i].link);
+	}
 }
 
 var addBookmarkItem = cm.Item({
 	label: _("add_bookmark_context_default"),
 	context: cm.SelectionContext(),
 	//This is the only way to get it localized,
-	//since context menu content scripts don't support the 'contentScriptOptions property
+	//since context menu content scripts don't support l10n nor the 'contentScriptOptions property
 	//otherwise it would have been in the contentScriptFile
 	contentScript: 'self.on("context", function () {'+ 
 	'if(window.getSelection().toString()) {'+
@@ -76,7 +84,7 @@ var copyBookmarkItem = cm.Item({
 	label: _("copy_bookmark_context_default"),
 	context: cm.SelectionContext(),
 	//This is the only way to get it localized,
-	//since context menu content scripts don't support the 'contentScriptOptions property
+	//since context menu content scripts don't support l10n nor the 'contentScriptOptions property
 	//otherwise it would have been in the contentScriptFile
 	contentScript: 'self.on("context", function () {'+ 
 	'if(window.getSelection().toString()) {'+
@@ -105,7 +113,7 @@ function do_addBookmark(text, url, shouldNotify=true) {
 
 	if(ss.quotaUsage < 1) {
 		newLength = ss.storage.bookmarks.push({text: text, link: url});
-  manager.port.emit("add", JSON.stringify({id: newLength-1, text: text, link: url}));
+		manager.port.emit("add", JSON.stringify({id: newLength-1, text: text, link: url}));
 	} else {
 		notifications.notify({
 			title: _("quota_exceeded_notification_title"),
@@ -115,24 +123,25 @@ function do_addBookmark(text, url, shouldNotify=true) {
 	}
 	addBookmarksMenuItem(text, url);
 	if(shouldNotify) {
-	notifications.notify({
-		title: _("added_bookmark_notification_title"),
-		"text": text
-	});
+		notifications.notify({
+			title: _("added_bookmark_notification_title"),
+			"text": text
+		});
 	}
 }
 
 function do_deleteBookmarks(indexArray) {
 	//this gymnastics are nesesary, cause when you remove an item, the others shift to the left
 	//I could have just reverced the array here though
-var bookmarkMenuItems = [];
+	var bookmarkMenuItems = [];
 	for(index of indexArray) {
-bookmarkMenuItems.push(bookmarksMenu.items[index]);
-delete ss.storage.bookmarks[index];
+		bookmarkMenuItems.push(bookmarksMenu.items[index]);
+		//keep the index, so it could be used as an actual index
+		ss.storage.bookmarks[index] = false;
 	}
 	for(bookmarkMenuItem of bookmarkMenuItems.reverse()) {
-bookmarksMenu.removeItem(bookmarkMenuItem );
-bookmarkMenuItem .destroy();
+		bookmarksMenu.removeItem(bookmarkMenuItem );
+		bookmarkMenuItem .destroy();
 	}
 }
 
@@ -193,24 +202,24 @@ function prepairBookmarkLink(text, url) {
 	qstring = QSTRING_NAME + encodeURIComponent(text);
 
 	if(url.indexOf(QSTRING_NAME) >= 0) {
-	url = url.replace(RegExp(QSTRING_NAME + '.*?[^&|^#]*', 'g'), qstring);
+		url = url.replace(RegExp(QSTRING_NAME + '.*?[^&|^#]*', 'g'), qstring);
 	} else {
-	var searchIndex = url.indexOf('?');
-	var hashIndex = url.indexOf('#');
-	var hashValue = '';
-	if(hashIndex >= 0) {
-		var tmp = url.split('#');
-		url = tmp[0];
-		hashValue = tmp[1];
-	}
-	if(searchIndex < 0) {
-		url = url.concat('?', qstring);
-	} else if(url.indexOf(qstring) < 0) {
-		url = url.concat('&', qstring);
-	}
-	if(hashValue) {
-		url = url.concat('#', hashValue);
-	}
+		var searchIndex = url.indexOf('?');
+		var hashIndex = url.indexOf('#');
+		var hashValue = '';
+		if(hashIndex >= 0) {
+			var tmp = url.split('#');
+			url = tmp[0];
+			hashValue = tmp[1];
+		}
+		if(searchIndex < 0) {
+			url = url.concat('?', qstring);
+		} else if(url.indexOf(qstring) < 0) {
+			url = url.concat('&', qstring);
+		}
+		if(hashValue) {
+			url = url.concat('#', hashValue);
+		}
 	}
 	return url;
 }
@@ -218,10 +227,12 @@ function prepairBookmarkLink(text, url) {
 //the bookmark manager
 
 var manager = require("sdk/panel").Panel({
-  contentURL: self.data.url("manager.html"),
-  contentScriptFile: self.data.url("manager.js"),
-  contentScriptWhen: 'ready',
-  contentScriptOptions: {bookmarks: ss.storage.bookmarks},
+	height: 400,
+	position: {bottom: 100},
+	contentURL: self.data.url("manager.html"),
+	contentScriptFile: self.data.url("manager.js"),
+	contentScriptWhen: 'ready',
+	contentScriptOptions: {bookmarks: ss.storage.bookmarks, l10n: {confirm_delete_start: _("confirm_delete_start"), confirm_delete_end: _("confirm_delete_end")}},
 });
 
 var managerMenuitem = cm.Item({
@@ -237,20 +248,25 @@ var managerMenuitem = cm.Item({
 });
 
 manager.on("show", function() {
-  manager.port.emit("show");
+	manager.port.emit("show");
 });
 
 manager.port.on("close", function () {
-  manager.hide();
+	manager.hide();
 });
 
 manager.port.on('delete', function(data) {
-	var selected = JSON.parse(data);
-do_deleteBookmarks(selected);
-	notifications.notify({
-		title: _("bookmarks_deleted_title"),
-text: [_("bookmarks_deleted_text"), selected.length].join(' ')
-	});
+	if(data) {
+		var selected = JSON.parse(data);
+		if( selected && selected.hasOwnProperty("length") && selected.length) {
+			do_deleteBookmarks(selected);
+			notifications.notify({
+				title: _("bookmarks_deleted_title"),
+				text: [_("bookmarks_deleted_text"), selected.length].join(' ')
+			});
+		}
+	}
+	manager.show();
 });
 
 manager.port.on("import", function () {
@@ -259,69 +275,69 @@ manager.port.on("import", function () {
 		nsIFilePicker.modeOpen);
 	filePicker.open({
 		done: function(returnValue) {
-	if (returnValue == nsIFilePicker.returnOK || returnValue == nsIFilePicker.returnReplace) {
-var file = filePicker.file;
+			if (returnValue == nsIFilePicker.returnOK || returnValue == nsIFilePicker.returnReplace) {
+				var file = filePicker.file;
 
-Cu.import("resource://gre/modules/NetUtil.jsm");
+				Cu.import("resource://gre/modules/NetUtil.jsm");
 
-NetUtil.asyncFetch(file, function(inputStream, status) {
-  if (status) {
-    return;
-  }
+				NetUtil.asyncFetch(file, function(inputStream, status) {
+					if (status) {
+						return;
+					}
 
-  var data = NetUtil.readInputStreamToString(inputStream, inputStream.available());
-  var parsedData = JSON.parse(data);
-	  var oldLength = ss.storage.bookmarks.length;
+					var data = NetUtil.readInputStreamToString(inputStream, inputStream.available());
+					var parsedData = JSON.parse(data);
+					var oldLength = ss.storage.bookmarks.length;
 
-	  //pick only the values we need, excluding garbidge
-	  for(element of parsedData) {
-		  if(element !== null && typeof element == "object" && element.hasOwnProperty('text') && element.hasOwnProperty('link')) {
-do_addBookmark(element.text, element.link, false);
-		  }
-	  } 
+					//pick only the values we need, excluding garbidge
+					for(element of parsedData) {
+						if(element !== null && typeof element == "object" && element.hasOwnProperty('text') && element.hasOwnProperty('link')) {
+							do_addBookmark(element.text, element.link, false);
+						}
+					} 
 
-	  var numberAdded = ss.storage.bookmarks.length - oldLength;
-		  notifications.notify({
-			  title: _("notification_bookmarks_imported_title"),
-			  text: [_("notification_bookmarks_imported_text"), numberAdded].join(' ')
-		  });
-		  manager.show();
-});
-	}
+					var numberAdded = ss.storage.bookmarks.length - oldLength;
+					notifications.notify({
+						title: _("notification_bookmarks_imported_title"),
+						text: [_("notification_bookmarks_imported_text"), numberAdded].join(' ')
+					});
+					manager.show();
+				});
+			}
 		},
 	});
 });
 
 manager.port.on("export", function (selected) {
-filePicker.init(require("sdk/window/utils").getMostRecentBrowserWindow(),
+	filePicker.init(require("sdk/window/utils").getMostRecentBrowserWindow(),
 		_("export_dialog_title"),
 		nsIFilePicker.modeSave);
 	filePicker.open({
 		done: function(returnValue) {
-	if (returnValue == nsIFilePicker.returnOK || returnValue == nsIFilePicker.returnReplace) {
-var file = filePicker.file;
-var selectedBookmarks = [];
-for(sel of selected) {
-selectedBookmarks.push(ss.storage.bookmarks[sel]);
-}
-var data = JSON.stringify(selectedBookmarks);
+			if (returnValue == nsIFilePicker.returnOK || returnValue == nsIFilePicker.returnReplace) {
+				var file = filePicker.file;
+				var selectedBookmarks = [];
+				for(sel of selected) {
+					selectedBookmarks.push(ss.storage.bookmarks[sel]);
+				}
+				var data = JSON.stringify(selectedBookmarks);
 
-Cu.import("resource://gre/modules/NetUtil.jsm");  
-Cu.import("resource://gre/modules/FileUtils.jsm"); 
+				Cu.import("resource://gre/modules/NetUtil.jsm");  
+				Cu.import("resource://gre/modules/FileUtils.jsm"); 
 
-    var ostream = FileUtils.openSafeFileOutputStream(file); 
-    var converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"].createInstance(Ci.nsIScriptableUnicodeConverter);  
-    converter.charset = "UTF-8";  
-    var istream = converter.convertToInputStream(data);  
+				var ostream = FileUtils.openSafeFileOutputStream(file); 
+				var converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"].createInstance(Ci.nsIScriptableUnicodeConverter);  
+				converter.charset = "UTF-8";  
+				var istream = converter.convertToInputStream(data);  
 
-    NetUtil.asyncCopy(istream, ostream, function (status) {     
-		  notifications.notify({
-			  title: status===0?_("notification_bookmarks_exported_success"):_("notification_bookmarks_exported_failure"),
-			  text: [_("notification_bookmarks_exported_text"), file.leafName].join(' ')
-		  });
-		  manager.show();
-        });  
-    }
+				NetUtil.asyncCopy(istream, ostream, function (status) {     
+					notifications.notify({
+						title: status===0?_("notification_bookmarks_exported_success"):_("notification_bookmarks_exported_failure"),
+						text: [_("notification_bookmarks_exported_text"), file.leafName].join(' ')
+					});
+					manager.show();
+				});  
+			}
 		},
 	});
 });

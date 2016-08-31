@@ -1,21 +1,24 @@
 <html>
 	<head>
-		<title> Manage text bookmarks </title>
+		<title data-l10n-id="manager_title"></title>
 	</head>
 	<body>
-		<form>
-		<div>
-		<select id="bookmarks" width="400" size="20" multiple="multiple">
-	</select>
-</div>
-<div>
-		<input type="button" id="select-all" value="Select All" accesskey="a" />
-		<input type="button" id="select-none" value="Select None" accesskey="n" />
-		<input type="button" id="delete" value="Delete selected" accesskey="d" />
-		<input type="button" id="import" value="Import" accesskey="i" />
-		<input type="button" id="export" value="Export" accesskey="e" />
-		<input type="button" id="close" value="close" accesskey="c" />
-	</div>
-</form>
-	</body>
-</html>
+		<div id="main">
+			<form>
+				<div>
+					<label for="bookmarks" id="bookmarks-label"></label>
+					<select id="bookmarks" size="5" multiple="multiple">
+					</select>
+				</div>
+				<div id="buttons">
+					<button id="select-all" data-l10n-id="select_all_button" />
+						<button id="select-none" data-l10n-id="select_none_button" />
+								<button id="import" data-l10n-id="import_button" />
+									<button id="export" data-l10n-id="export_selected_button" />
+							<button id="delete" data-l10n-id="delete_selected_button" />
+										<button id="close" data-l10n-id="close_button" />
+										</div>
+									</form>
+								</div>
+							</body>
+						</html>
