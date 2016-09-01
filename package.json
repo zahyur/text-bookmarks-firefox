@@ -1,6 +1,6 @@
 {
-  "title": "Text to Link",
-  "name": "txt2link",
+  "title": "Text Bookmarks",
+  "name": "text-bookmarks",
   "version": "0.0.2",
   "description": "Makes a link to a selected text on any page.",
   "main": "index.js",

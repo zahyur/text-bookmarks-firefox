@@ -20,7 +20,7 @@ filePicker.defaultExtension = "text-bookmarks";
 filePicker.defaultString = "myTextBookmarks.text-bookmarks";
 
 //add the equals sign here, so i don't have to type it everywhere
-const QSTRING_NAME = 'txt2link=';
+const QSTRING_NAME = 'text-bookmark=';
 const MAX_QUERY_STRING_VALUE = 30;
 const SEPARATOR = ">>>>>>>";
 

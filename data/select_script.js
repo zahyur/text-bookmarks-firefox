@@ -1,4 +1,4 @@
-const QSTRING_NAME = 'txt2link=';
+const QSTRING_NAME = 'text-bookmark=';
 var qstring = decodeURIComponent(document.location.search);
 var text = "";
 var endText = "";
