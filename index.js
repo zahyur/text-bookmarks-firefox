@@ -28,18 +28,15 @@ if (!ss.storage.bookmarks) {
 	ss.storage.bookmarks  = [];
 }
 
-var bookmarksMenu = cm.Menu({
-	label: _("bookmarks_submenu"),
-	context: cm.PageContext(),
-	contentScriptFile: self.data.url('openBookmark_script.js'),
-});
 
-function addBookmarksMenuItem(text, url) {
+//functions
+
+var addBookmarksMenuItem = function(text, url) {
 	var label = '';
 	if(text.length > 30) {
-label = text.slice(0,30) + '...';
+		label = text.slice(0,30) + '...';
 	} else {
-	label = text;
+		label = text;
 	}
 	bookmarksMenu.addItem(cm.Item({
 		label: label,
@@ -54,54 +51,8 @@ label = text.slice(0,30) + '...';
 	});
 }
 
-for (var i=0; i < ss.storage.bookmarks.length; i++) {
-	if(ss.storage.bookmarks[i] && (typeof ss.storage.bookmarks[i] == "object") && ss.storage.bookmarks[i].hasOwnProperty('text') && ss.storage.bookmarks[i].hasOwnProperty('link')) {
-	addBookmarksMenuItem(ss.storage.bookmarks[i].text, ss.storage.bookmarks[i].link);
-	}
-}
 
-var addBookmarkItem = cm.Item({
-	label: _("add_bookmark_context_default"),
-	context: cm.SelectionContext(),
-	//This is the only way to get it localized,
-	//since context menu content scripts don't support l10n nor the 'contentScriptOptions property
-	//otherwise it would have been in the contentScriptFile
-	contentScript: 'self.on("context", function () {'+ 
-	'if(window.getSelection().toString()) {'+
-	'	return ["'+ _("add_bookmark_context") +'", window.getSelection().toString()].join(" ");'+
-	'}'+
-	'return false;'+
-	'});',
-	//handling the clicks is here
-	contentScriptFile: self.data.url('bookmark_script.js'),
-	data: "bookmarkItem",
-	onMessage: function(data) {
-		do_addBookmark(data.text, data.url);
-	}
-});
-
-var copyBookmarkItem = cm.Item({
-	label: _("copy_bookmark_context_default"),
-	context: cm.SelectionContext(),
-	//This is the only way to get it localized,
-	//since context menu content scripts don't support l10n nor the 'contentScriptOptions property
-	//otherwise it would have been in the contentScriptFile
-	contentScript: 'self.on("context", function () {'+ 
-	'if(window.getSelection().toString()) {'+
-	'	return ["'+ _("copy_bookmark_context") +'", window.getSelection().toString()].join(" ");'+
-	'}'+
-	'return false;'+
-	'});',
-	//handling the clicks is here
-	contentScriptFile: self.data.url('bookmark_script.js'),
-	data: "bookmarkItem",
-	onMessage: function(data) {
-		do_copyBookmarkLink(data.text, data.url);
-	}
-});
-
-
-function do_addBookmark(text, url, shouldNotify=true) {
+var do_addBookmark = function(text, url, shouldNotify=true) {
 	if(!text) {
 		return;
 	}
@@ -130,7 +81,7 @@ function do_addBookmark(text, url, shouldNotify=true) {
 	}
 }
 
-function do_deleteBookmarks(indexArray) {
+var do_deleteBookmarks = function(indexArray) {
 	//this gymnastics are nesesary, cause when you remove an item, the others shift to the left
 	//I could have just reverced the array here though
 	var bookmarkMenuItems = [];
@@ -145,42 +96,8 @@ function do_deleteBookmarks(indexArray) {
 	}
 }
 
-pageMod.PageMod({
-	include: RegExp('.*'+ QSTRING_NAME +'.*'),
-	contentScriptFile: self.data.url("select_script.js"),
-	contentScriptWhen: 'ready',
-});
 
-var addBookmarkHotKey = Hotkey({
-	combo: _("add_bookmark_hotkey"),
-	onPress:addBookmarkHotkeyCallback
-});
-
-function addBookmarkHotkeyCallback() {
-	if ( typeof addBookmarkHotkeyCallback.action == 'undefined' ) {
-		addBookmarkHotkeyCallback.action = 0;
-	}
-	if ( typeof addBookmarkHotkeyCallback.counter == 'undefined' ) {
-		addBookmarkHotkeyCallback.counter = 0;
-	}
-	if(addBookmarkHotkeyCallback.counter == 0){
-		addBookmarkHotkeyCallback.action = setTimeout(function() {
-			do_addBookmark(selection.text, tabs.activeTab.url);
-			addBookmarkHotkeyCallback.counter =0;
-			addBookmarkHotkeyCallback.action=0;
-		}, 500);
-		addBookmarkHotkeyCallback.counter = 1;
-	} else if(addBookmarkHotkeyCallback.counter == 1) {
-		if(      addBookmarkHotkeyCallback.action) {
-			clearTimeout(addBookmarkHotkeyCallback.action);
-			addBookmarkHotkeyCallback.action =0;
-		}
-		addBookmarkHotkeyCallback.counter =0;
-		do_copyBookmarkLink(selection.text, tabs.activeTab.url);
-	}
-}
-
-function do_copyBookmarkLink(text, url) {
+var do_copyBookmarkLink = function(text, url) {
 	var preparedURL = prepairBookmarkLink(text,url);
 	clipboard.set(preparedURL );
 	notifications.notify({
@@ -189,7 +106,7 @@ function do_copyBookmarkLink(text, url) {
 	});
 }
 
-function prepairBookmarkLink(text, url) {
+var prepairBookmarkLink = function(text, url) {
 	var qstring;
 	text = text.trim();
 	if(text.length > MAX_QUERY_STRING_VALUE) {
@@ -224,6 +141,103 @@ function prepairBookmarkLink(text, url) {
 	return url;
 }
 
+
+var addBookmarkHotkeyCallback = function() {
+	if ( typeof addBookmarkHotkeyCallback.action == 'undefined' ) {
+		addBookmarkHotkeyCallback.action = 0;
+	}
+	if ( typeof addBookmarkHotkeyCallback.counter == 'undefined' ) {
+		addBookmarkHotkeyCallback.counter = 0;
+	}
+	if(addBookmarkHotkeyCallback.counter == 0){
+		addBookmarkHotkeyCallback.action = setTimeout(function() {
+			do_addBookmark(selection.text, tabs.activeTab.url);
+			addBookmarkHotkeyCallback.counter =0;
+			addBookmarkHotkeyCallback.action=0;
+		}, 500);
+		addBookmarkHotkeyCallback.counter = 1;
+	} else if(addBookmarkHotkeyCallback.counter == 1) {
+		if(      addBookmarkHotkeyCallback.action) {
+			clearTimeout(addBookmarkHotkeyCallback.action);
+			addBookmarkHotkeyCallback.action =0;
+		}
+		addBookmarkHotkeyCallback.counter =0;
+		do_copyBookmarkLink(selection.text, tabs.activeTab.url);
+	}
+}
+
+
+//actual work begins here
+
+var bookmarksMenu = cm.Menu({
+	label: _("bookmarks_submenu"),
+	context: cm.PageContext(),
+	contentScriptFile: self.data.url('openBookmark_script.js'),
+});
+
+
+for (var i=0; i < ss.storage.bookmarks.length; i++) {
+	if(ss.storage.bookmarks[i] && (typeof ss.storage.bookmarks[i] == "object") && ss.storage.bookmarks[i].hasOwnProperty('text') && ss.storage.bookmarks[i].hasOwnProperty('link')) {
+		addBookmarksMenuItem(ss.storage.bookmarks[i].text, ss.storage.bookmarks[i].link);
+	}
+}
+
+
+var addBookmarkItem = cm.Item({
+	label: _("add_bookmark_context_default"),
+	context: cm.SelectionContext(),
+	//This is the only way to get it localized,
+	//since context menu content scripts don't support l10n nor the 'contentScriptOptions property
+	//otherwise it would have been in the contentScriptFile
+	contentScript: 'self.on("context", function () {'+ 
+	'if(window.getSelection().toString()) {'+
+	'	return ["'+ _("add_bookmark_context") +'", window.getSelection().toString()].join(" ");'+
+	'}'+
+	'return false;'+
+	'});',
+	//handling the clicks is here
+	contentScriptFile: self.data.url('bookmark_script.js'),
+	data: "bookmarkItem",
+	onMessage: function(data) {
+		do_addBookmark(data.text, data.url);
+	}
+});
+
+
+var copyBookmarkItem = cm.Item({
+	label: _("copy_bookmark_context_default"),
+	context: cm.SelectionContext(),
+	//This is the only way to get it localized,
+	//since context menu content scripts don't support l10n nor the 'contentScriptOptions property
+	//otherwise it would have been in the contentScriptFile
+	contentScript: 'self.on("context", function () {'+ 
+	'if(window.getSelection().toString()) {'+
+	'	return ["'+ _("copy_bookmark_context") +'", window.getSelection().toString()].join(" ");'+
+	'}'+
+	'return false;'+
+	'});',
+	//handling the clicks is here
+	contentScriptFile: self.data.url('bookmark_script.js'),
+	data: "bookmarkItem",
+	onMessage: function(data) {
+		do_copyBookmarkLink(data.text, data.url);
+	}
+});
+
+
+pageMod.PageMod({
+	include: RegExp('.*'+ QSTRING_NAME +'.*'),
+	contentScriptFile: self.data.url("select_script.js"),
+	contentScriptWhen: 'ready',
+});
+
+
+var addBookmarkHotKey = Hotkey({
+	combo: _("add_bookmark_hotkey"),
+	onPress:addBookmarkHotkeyCallback
+});
+
+
 //the bookmark manager
 
 var manager = require("sdk/panel").Panel({
@@ -234,6 +248,7 @@ var manager = require("sdk/panel").Panel({
 	contentScriptWhen: 'ready',
 	contentScriptOptions: {bookmarks: ss.storage.bookmarks, l10n: {confirm_delete_start: _("confirm_delete_start"), confirm_delete_end: _("confirm_delete_end")}},
 });
+
 
 var managerMenuitem = cm.Item({
 	label: _("manager_menuitem"),
@@ -246,6 +261,7 @@ var managerMenuitem = cm.Item({
 		}
 	},
 });
+
 
 manager.on("show", function() {
 	manager.port.emit("show");

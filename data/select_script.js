@@ -9,14 +9,14 @@ if(self.options && self.options.text) {
 	text = qstring.match(RegExp(QSTRING_NAME + '.*?[^&|^#]*', 'g')).pop().split('=').pop();
 }
 if(text) {
-	if(text.indexOf(separator)) {
+	if(text.indexOf(separator) >= 0) {
 		var tmp = text.split(separator);
 		text = tmp[0];
 		endText = tmp[1];
 	}
 	var found = window.find(text, true, false, false, false, false);
 	if(found) {
-document.activeElement.focus();
+		document.activeElement.focus();
 		if(endText) {
 			var sel = window.getSelection();
 			do {

@@ -1,5 +1,5 @@
 {
-  "title": "Text Bookmarks",
+  "title": "Don't bookmark just links - bookmark a chosen text on the page and/or share it with everyone",
   "name": "text-bookmarks",
   "version": "0.0.2",
   "description": "Makes a link to a selected text on any page.",
@@ -10,9 +10,21 @@
   },
   "license": "GPL v2",
   "keywords": [
-    "create",
-    "link",
+    "bookmark",
+    "selected",
     "text",
-    "share"
-  ]
+    "link",
+    "share",
+    "отметки",
+    "маркиран",
+    "текст",
+    "връзка",
+    "споделяне"
+  ],
+    "locales": {
+        "bg": {
+            "title": "Текстови отметки",
+            "description": "Не отмятайте просто страници - отмятайте маркиран текст от страниците и/или го споделяйте с всички"
+        }
+    }
 }
