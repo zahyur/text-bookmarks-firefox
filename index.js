@@ -1,4 +1,4 @@
-const clipboard = require("sdk/clipboard");
+var clipboard = require("sdk/clipboard");
 var cm = require("sdk/context-menu");
 var { Hotkey } = require("sdk/hotkeys");
 var notifications = require("sdk/notifications");
@@ -6,7 +6,7 @@ var pageMod = require("sdk/page-mod");
 var selection = require("sdk/selection");
 var self = require("sdk/self");
 var ss = require("sdk/simple-storage");
-const tabs = require('sdk/tabs');
+var tabs = require('sdk/tabs');
 var { setTimeout, clearTimeout } = require("sdk/timers");
 var URL = require("sdk/url");
 var _ = require("sdk/l10n").get;

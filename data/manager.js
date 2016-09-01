@@ -38,7 +38,6 @@ spaces += '&nbsp;';
 	opt.value= id;
 	opt.innerHTML = [label, link.replace(/http.?:\/\/([^\/]+)\//, '$1').slice(0,30)].join("\t");
 	bookmarksSelect.appendChild(opt);
-
 }
 function updateTitle() {
 	var label = document.getElementById('bookmarks-label');
