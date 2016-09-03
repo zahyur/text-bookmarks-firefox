@@ -1,8 +1,8 @@
 {
-  "title": "Don't bookmark just links - bookmark a chosen text on the page and/or share it with everyone",
+  "title": "Text Bookmarks",
   "name": "text-bookmarks",
   "version": "0.0.2",
-  "description": "Makes a link to a selected text on any page.",
+  "description": "Don't bookmark just links - bookmark a chosen text on the page and/or share it with everyone",
   "main": "index.js",
   "author": "Zahari Yurukov <zahari.yurukov@gmail.com>",
   "engines": {
