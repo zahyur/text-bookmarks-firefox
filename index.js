@@ -166,6 +166,13 @@ var addBookmarkHotkeyCallback = function() {
 
 //actual work begins here
 
+pageMod.PageMod({
+	include: RegExp('.*'+ QSTRING_NAME +'.*'),
+	contentScriptFile: self.data.url("select_script.js"),
+	contentScriptWhen: 'ready',
+});
+
+
 var bookmarksMenu = cm.Menu({
 	label: _("bookmarks_submenu"),
 	context: cm.PageContext(),
@@ -219,13 +226,6 @@ var copyBookmarkItem = cm.Item({
 	onMessage: function(data) {
 		do_copyBookmarkLink(data.text, data.url);
 	}
-});
-
-
-pageMod.PageMod({
-	include: RegExp('.*'+ QSTRING_NAME +'.*'),
-	contentScriptFile: self.data.url("select_script.js"),
-	contentScriptWhen: 'ready',
 });
 
 
