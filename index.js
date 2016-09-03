@@ -24,6 +24,7 @@ const QSTRING_NAME = 'text-bookmark=';
 const MAX_QUERY_STRING_VALUE = 30;
 const SEPARATOR = ">>>>>>>";
 var pageMods = [];
+
 if (!ss.storage.bookmarks) {
 	ss.storage.bookmarks  = [];
 }
@@ -43,6 +44,8 @@ var addBookmarksMenuItem = function(text, url) {
 		data: JSON.stringify({text: text, link: url})
 	}));
 
+	//this is here, cause it should be executed when Firefox starts
+	//i.e. when the stored bookmarks are read and added to the menu
 	pageMods.push(pageMod.PageMod({
 		include: url,
 		contentScriptFile: self.data.url("select_script.js"),
