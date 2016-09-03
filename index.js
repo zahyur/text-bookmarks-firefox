@@ -23,7 +23,7 @@ filePicker.defaultString = "myTextBookmarks.text-bookmarks";
 const QSTRING_NAME = 'text-bookmark=';
 const MAX_QUERY_STRING_VALUE = 30;
 const SEPARATOR = ">>>>>>>";
-
+var pageMods = [];
 if (!ss.storage.bookmarks) {
 	ss.storage.bookmarks  = [];
 }
@@ -43,12 +43,12 @@ var addBookmarksMenuItem = function(text, url) {
 		data: JSON.stringify({text: text, link: url})
 	}));
 
-	pageMod.PageMod({
+	pageMods.push(pageMod.PageMod({
 		include: url,
 		contentScriptFile: self.data.url("select_script.js"),
 		contentScriptWhen: 'ready',
 		contentScriptOptions: {text: text}
-	});
+	}));
 }
 
 
@@ -88,6 +88,8 @@ var do_deleteBookmarks = function(indexArray) {
 		bookmarksMenu.removeItem(bookmarkMenuItem);
 		bookmarkMenuItem .destroy();
 		ss.storage.bookmarks.splice(index,1);
+		pageMods[index].destroy();
+		pageMods.splice(index,1);
 	}
 }
 
