@@ -52,7 +52,7 @@ var getSelectedBookmarks = function() {
 	var selected = [];
 	for(var i=0; i < bookmarksSelect.options.length; i++) {
 		if(bookmarksSelect.options[i].selected === true) {
-			selected.push(bookmarksSelect.options[i].value);
+			selected.push(i);
 		}
 	}
 	return selected;
@@ -111,7 +111,7 @@ deleteButton.addEventListener('click', function onclick(event) {
 	if(selected.length && confirm([l10n.confirm_delete_start, selected.length, l10n.confirm_delete_end].join(' '))) {
 		self.port.emit("delete", JSON.stringify(selected));
 		for(sel of selected.reverse()) {
-			bookmarksSelect.options[sel] = null;
+			bookmarksSelect.options.splice(sel,1);
 		}
 	} else {
 		//this is here to cause the main script to reopen the Manager

@@ -63,7 +63,7 @@ var do_addBookmark = function(text, url, shouldNotify=true) {
 	url = url.replace(RegExp(QSTRING_NAME + '.*?[^&|^#]*', 'g'), '');
 
 	if(ss.quotaUsage < 1) {
-		newLength = ss.storage.bookmarks.push({text: text, link: url});
+		var newLength = ss.storage.bookmarks.push({text: text, link: url});
 		manager.port.emit("add", JSON.stringify({id: newLength-1, text: text, link: url}));
 	} else {
 		notifications.notify({
@@ -82,17 +82,12 @@ var do_addBookmark = function(text, url, shouldNotify=true) {
 }
 
 var do_deleteBookmarks = function(indexArray) {
-	//this gymnastics are nesesary, cause when you remove an item, the others shift to the left
-	//I could have just reverced the array here though
-	var bookmarkMenuItems = [];
-	for(index of indexArray) {
-		bookmarkMenuItems.push(bookmarksMenu.items[index]);
-		//keep the index, so it could be used as an actual index
-		ss.storage.bookmarks[index] = false;
-	}
-	for(bookmarkMenuItem of bookmarkMenuItems.reverse()) {
-		bookmarksMenu.removeItem(bookmarkMenuItem );
+	var sortedIndexes = indexArray.sort(function(a,b){return b-a});
+	for(index of sortedIndexes) {
+		var bookmarkMenuItem = bookmarksMenu.items[index];
+		bookmarksMenu.removeItem(bookmarkMenuItem);
 		bookmarkMenuItem .destroy();
+		ss.storage.bookmarks.splice(index,1);
 	}
 }
 
