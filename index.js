@@ -49,13 +49,14 @@ var addBookmarksMenuItem = function(text, url) {
 	pageMods.push(pageMod.PageMod({
 		include: url,
 		contentScriptFile: self.data.url("select_script.js"),
-		contentScriptWhen: 'ready',
+		contentScriptWhen: 'end',
 		contentScriptOptions: {text: text}
 	}));
 }
 
 
 var do_addBookmark = function(text, url, shouldNotify=true) {
+	text = text.trim();
 	if(!text) {
 		return;
 	}
@@ -172,7 +173,7 @@ var addBookmarkHotkeyCallback = function() {
 pageMod.PageMod({
 	include: RegExp('.*'+ QSTRING_NAME +'.*'),
 	contentScriptFile: self.data.url("select_script.js"),
-	contentScriptWhen: 'ready',
+	contentScriptWhen: 'end',
 });
 
 
