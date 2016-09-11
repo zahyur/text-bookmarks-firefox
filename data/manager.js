@@ -106,19 +106,26 @@ selectNoneButton.addEventListener('click', function onclick(event) {
 
 deleteButton.addEventListener('click', function onclick(event) {
 	var selected = getSelectedBookmarks();
-	//this confirm check is here, cause it'd have to jump one additional time
-	//between this script and the main script if it was there.
-	if(selected.length && confirm([l10n.confirm_delete_start, selected.length, l10n.confirm_delete_end].join(' '))) {
-		self.port.emit("delete", JSON.stringify(selected));
-		for(sel of selected.reverse()) {
-			bookmarksSelect.options.splice(sel,1);
+	if(selected.length) {
+		//this confirm check is here, cause it'd have to jump one additional time
+		//between this script and the main script if it was there.
+		//in order to delete the options after confirmation
+		if(confirm([l10n.confirm_delete_start, selected.length, l10n.confirm_delete_end].join(' '))) {
+			self.port.emit("delete", JSON.stringify(selected));
+			for(sel of selected.reverse()) {
+				bookmarksSelect.options.splice(sel,1);
+			}
+		} else {
+			//the user canceled deletion
+			//this is here to cause the main script to reopen the Manager
+			//it's closed because of the openned confirm dialog, so preventDefault() doesn't help us.
+			self.port.emit("delete", '');
 		}
 	} else {
-		//this is here to cause the main script to reopen the Manager
-		//it's closed because of the openned confirm dialog, so preventDefault() doesn't help us.
-		self.port.emit("delete", '');
+		//no bookmarks selected
+		event.preventDefault();
+		bookmarksSelect.focus();
 	}
-	bookmarksSelect.focus();
 });
 
 importButton.addEventListener('click', function onclick(event) {
