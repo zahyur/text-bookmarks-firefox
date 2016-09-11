@@ -67,8 +67,8 @@ var do_addBookmark = function(text, url, shouldNotify=true) {
 	url = url.replace(RegExp(QSTRING_NAME + '.*?[^&|^#]*', 'g'), '');
 
 	if(ss.quotaUsage < 1) {
-		var newLength = ss.storage.bookmarks.push({text: text, link: url});
-		manager.port.emit("add", JSON.stringify({id: newLength-1, text: text, link: url}));
+		ss.storage.bookmarks.push({text: text, link: url});
+		manager.port.emit("add", JSON.stringify({text: text, link: url}));
 	} else {
 		notifications.notify({
 			title: _("quota_exceeded_notification_title"),
@@ -86,6 +86,7 @@ var do_addBookmark = function(text, url, shouldNotify=true) {
 }
 
 var do_deleteBookmarks = function(indexArray) {
+	//delete from the highest index to the lowest one
 	var sortedIndexes = indexArray.sort(function(a,b){return b-a});
 	for(index of sortedIndexes) {
 		var bookmarkMenuItem = bookmarksMenu.items[index];

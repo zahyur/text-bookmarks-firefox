@@ -17,7 +17,7 @@ if(self.options) {
 	}
 }
 
-var addBookmark = function(id, text, link) {
+var addBookmark = function(text, link) {
 	var opt = document.createElement("option");
 	var label = '';
 	if(text.length > 30) {
@@ -30,7 +30,7 @@ var addBookmark = function(id, text, link) {
 		}
 		label = text + spaces;
 	}
-	opt.value= id;
+	opt.value= text;
 	opt.innerHTML = [label, link.replace(/http.?:\/\/([^\/]+)\//, '$1').slice(0,30)].join("\t");
 	bookmarksSelect.appendChild(opt);
 }
@@ -61,7 +61,7 @@ var getSelectedBookmarks = function() {
 
 for(var i=0; i < bookmarks.length; i++) {
 	if(bookmarks[i] && (typeof bookmarks[i] == "object") && bookmarks[i].hasOwnProperty('text') && bookmarks[i].hasOwnProperty('link')) {
-		addBookmark(i, bookmarks[i].text, bookmarks[i].link);
+		addBookmark(bookmarks[i].text, bookmarks[i].link);
 	}
 }
 
@@ -77,7 +77,7 @@ bookmarksSelect.addEventListener("change", function(evt) {
 
 self.port.on("add", function (data) {
 	bookmark = JSON.parse(data);
-	addBookmark(bookmark.id, bookmark.text, bookmark.link);
+	addBookmark(bookmark.text, bookmark.link);
 });
 
 document.addEventListener('keyup', function (event) {

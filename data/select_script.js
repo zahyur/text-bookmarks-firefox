@@ -7,7 +7,7 @@ if(self.options && self.options.text) {
 	text = self.options.text;
 	//window.find is not perticulary good at finding long text
 	//especially containing new lines
-	//so brake it here - as a temporary workaround/hack
+	//so brake it here - as a workaround/hack
 var hasNewLines = text.indexOf("\n");
 	if(hasNewLines >= 0) {
 		var lines =  text.split("\n");
@@ -17,7 +17,6 @@ text = [lines.shift(), separator, lines.pop()].join('');
 	text = qstring.match(RegExp(QSTRING_NAME + '.*?[^&|^#]*', 'g')).pop().split('=').pop();
 }
 if(text) {
-	console.log(text);
 	if(text.indexOf(separator) >= 0) {
 		var tmp = text.split(separator);
 		text = tmp[0];
